@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecurePersona</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="animations.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1 class="title">SecurePersona</h1>
+      <p class="subtitle">Secure Auto Form Filler</p>
+    </div>
+
+    <!-- Profile Selection -->
+    <div class="profile-section">
+      <label for="profileSelect" class="profile-label">Select Profile:</label>
+      <select id="profileSelect" class="profile-select">
+        <option value="">-- Select Profile --</option>
+      </select>
+      <button id="createProfileBtn" class="btn btn-secondary">Create New Profile</button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-section">
+      <button id="fillFormBtn" class="btn btn-primary" disabled>
+        <span class="btn-icon">📝</span>
+        Fill Form
+      </button>
+      <button id="generatePasswordBtn" class="btn btn-accent">
+        <span class="btn-icon">🔐</span>
+        Generate Password
+      </button>
+    </div>
+
+    <!-- Password Generator Section -->
+    <div id="passwordSection" class="password-section hidden">
+      <div class="password-options">
+        <label class="checkbox-label">
+          <input type="checkbox" id="includeNumbers" checked>
+          <span class="checkmark"></span>
+          Include Numbers
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="includeSymbols" checked>
+          <span class="checkmark"></span>
+          Include Symbols
+        </label>
+        <div class="length-control">
+          <label for="passwordLength">Length: <span id="lengthValue">12</span></label>
+          <input type="range" id="passwordLength" min="8" max="32" value="12">
+        </div>
+      </div>
+      <div class="password-result">
+        <input type="text" id="generatedPassword" class="password-input" readonly>
+        <button id="copyPasswordBtn" class="btn btn-copy">Copy</button>
+      </div>
+    </div>
+
+    <!-- Status Messages & Lottie Animation -->
+    <div id="statusMessage" class="status-message hidden">
+      <span id="statusText"></span>
+      <div id="checkmarkAnimation" class="animation-container"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <button id="settingsBtn" class="btn btn-link">Settings</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.6/lottie.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

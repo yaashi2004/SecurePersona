@@ -1,0 +1,87 @@
+/* options/animations.css */
+
+/* Fade in/out for status messages */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Slide down/up for profile editor */
+@keyframes slideDown {
+  from { max-height: 0; opacity: 0; transform: translateY(-20px); }
+  to   { max-height: 1000px; opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { max-height: 1000px; opacity: 1; transform: translateY(0); }
+  to   { max-height: 0; opacity: 0; transform: translateY(-20px); }
+}
+
+/* Modal fade and scale */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes modalOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.8); }
+}
+
+/* Button hover pulse */
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(0,123,255,0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(0,123,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,123,255,0); }
+}
+
+/* Shake for errors */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%, 75% { transform: translateX(-5px); }
+  50%      { transform: translateX(5px); }
+}
+
+/* Applied animations */
+.status-message {
+  animation: fadeIn 0.3s ease-in-out;
+}
+.status-message.hiding {
+  animation: fadeOut 0.3s ease-in-out;
+}
+
+.profile-editor:not(.hidden) {
+  animation: slideDown 0.4s ease-out;
+  overflow: hidden;
+}
+.profile-editor.hidden {
+  animation: slideUp 0.3s ease-in;
+  overflow: hidden;
+}
+
+.modal:not(.hidden) .modal-content {
+  animation: modalIn 0.3s ease-out;
+}
+.modal.hidden .modal-content {
+  animation: modalOut 0.3s ease-in;
+}
+
+.btn:hover {
+  animation: pulse 1s infinite;
+}
+
+.status-message.error {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Smooth transitions */
+.profile-item, .btn, .form-input, .form-textarea {
+  transition: all 0.2s ease;
+}
+
+.form-input:focus, .form-textarea:focus, .btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.3);
+}

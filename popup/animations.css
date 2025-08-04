@@ -1,0 +1,243 @@
+/* animations.css */
+
+/* Fade in animation for status messages */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Slide down animation for password section */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+    transform: translateY(0);
+  }
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    max-height: 200px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Button hover animations */
+@keyframes buttonHover {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* Success checkmark animation */
+@keyframes checkmarkPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Pulse animation for active elements */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+/* Shake animation for errors */
+@keyframes shake {
+  0%, 20%, 40%, 60%, 80%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Bounce animation for icons */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Applied animations */
+.status-message {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.status-message.hiding {
+  animation: fadeOut 0.3s ease-in-out;
+}
+
+.password-section:not(.hidden) {
+  animation: slideDown 0.4s ease-out;
+  overflow: hidden;
+}
+
+.password-section.hidden {
+  animation: slideUp 0.3s ease-in;
+}
+
+.btn:hover {
+  animation: buttonHover 0.2s ease-in-out;
+  transition: all 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+.status-message.success::before {
+  content: "✓ ";
+  animation: checkmarkPop 0.5s ease-out;
+  display: inline-block;
+}
+
+.status-message.error {
+  animation: shake 0.5s ease-in-out;
+}
+
+.btn-primary:focus {
+  animation: pulse 1.5s infinite;
+}
+
+.btn-icon {
+  animation: bounce 0.6s ease-in-out;
+}
+
+/* Smooth transitions */
+.profile-select, .password-input, .btn {
+  transition: all 0.2s ease;
+}
+
+.profile-select:focus, .password-input:focus {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Loading state animation */
+.loading::after {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+/* Smooth opacity transitions */
+.hidden {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.visible {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Copy button success animation */
+.btn-copy.copied {
+  background-color: #28a745 !important;
+  animation: checkmarkPop 0.4s ease-out;
+}
+
+/* Profile selection highlight */
+.profile-select option:checked {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Hover effects with smooth transitions */
+.btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+.btn-accent:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+.btn-copy:hover {
+  background-color: #138496;
+  transform: translateY(-1px);
+}
+
+.btn-link:hover {
+  color: #0056b3;
+  text-decoration: none;
+}
+.animation-container {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+}

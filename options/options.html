@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecurePersona Settings</title>
+  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="animations.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="title">SecurePersona Settings</h1>
+      <p class="subtitle">Manage your profiles and form data</p>
+    </header>
+
+    <!-- Profile Management Section -->
+    <main class="main-content">
+      <section class="profile-list-section">
+        <div class="section-header">
+          <h2>Your Profiles</h2>
+          <button id="addProfileBtn" class="btn btn-primary">
+            <span class="btn-icon">➕</span>
+            Add New Profile
+          </button>
+        </div>
+        <div id="profilesList" class="profiles-list">
+          <!-- Profiles will be dynamically loaded here -->
+        </div>
+      </section>
+
+      <!-- Profile Editor Section -->
+      <section id="profileEditor" class="profile-editor hidden">
+        <div class="editor-header">
+          <h3 id="editorTitle">Create New Profile</h3>
+          <button id="closeEditorBtn" class="btn btn-secondary">✕</button>
+        </div>
+
+        <form id="profileForm" class="profile-form">
+          <!-- Basic Information -->
+          <div class="form-group">
+            <label for="profileName" class="form-label">Profile Name *</label>
+            <input type="text" id="profileName" class="form-input" placeholder="e.g., Job Applications" required>
+          </div>
+
+          <!-- Personal Information -->
+          <fieldset class="form-fieldset">
+            <legend>Personal Information</legend>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fullName" class="form-label">Full Name</label>
+                <input type="text" id="fullName" class="form-input" placeholder="John Doe">
+              </div>
+              <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" class="form-input" placeholder="john@example.com">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="tel" id="phone" class="form-input" placeholder="+1234567890">
+              </div>
+              <div class="form-group">
+                <label for="jobTitle" class="form-label">Job Title/Position</label>
+                <input type="text" id="jobTitle" class="form-input" placeholder="Software Developer">
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Address Information -->
+          <fieldset class="form-fieldset">
+            <legend>Address Information</legend>
+            <div class="form-group">
+              <label for="address" class="form-label">Address</label>
+              <input type="text" id="address" class="form-input" placeholder="123 Main Street">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city" class="form-label">City</label>
+                <input type="text" id="city" class="form-input" placeholder="New York">
+              </div>
+              <div class="form-group">
+                <label for="state" class="form-label">State/Region</label>
+                <input type="text" id="state" class="form-input" placeholder="NY">
+              </div>
+              <div class="form-group">
+                <label for="zip" class="form-label">ZIP/Postal Code</label>
+                <input type="text" id="zip" class="form-input" placeholder="10001">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="country" class="form-label">Country</label>
+              <input type="text" id="country" class="form-input" placeholder="United States">
+            </div>
+          </fieldset>
+
+          <!-- Professional Information -->
+          <fieldset class="form-fieldset">
+            <legend>Professional Information</legend>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="company" class="form-label">Company/Organization</label>
+                <input type="text" id="company" class="form-input" placeholder="Tech Corp">
+              </div>
+              <div class="form-group">
+                <label for="experienceYears" class="form-label">Years of Experience</label>
+                <input type="number" id="experienceYears" class="form-input" placeholder="3" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="portfolioURL" class="form-label">Portfolio URL</label>
+                <input type="url" id="portfolioURL" class="form-input" placeholder="https://johndoe.com">
+              </div>
+              <div class="form-group">
+                <label for="linkedin" class="form-label">LinkedIn Profile</label>
+                <input type="url" id="linkedin" class="form-input" placeholder="https://linkedin.com/in/johndoe">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="github" class="form-label">GitHub Profile</label>
+                <input type="url" id="github" class="form-input" placeholder="https://github.com/johndoe">
+              </div>
+              <div class="form-group">
+                <label for="resumeURL" class="form-label">Resume/CV URL</label>
+                <input type="url" id="resumeURL" class="form-input" placeholder="https://drive.google.com/resume">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="skills" class="form-label">Skills</label>
+              <textarea id="skills" class="form-textarea" rows="3" placeholder="JavaScript, Python, React, Node.js"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="education" class="form-label">Education</label>
+              <textarea id="education" class="form-textarea" rows="2" placeholder="Bachelor's in Computer Science, XYZ University"></textarea>
+            </div>
+          </fieldset>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="submit" id="saveProfileBtn" class="btn btn-primary">
+              <span class="btn-icon">💾</span>
+              Save Profile
+            </button>
+            <button type="button" id="cancelEditBtn" class="btn btn-secondary">Cancel</button>
+            <button type="button" id="deleteProfileBtn" class="btn btn-danger hidden">
+              <span class="btn-icon">🗑️</span>
+              Delete Profile
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- Status Messages -->
+    <div id="statusMessage" class="status-message hidden">
+      <span id="statusText"></span>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Confirm Delete</h3>
+        <p>Are you sure you want to delete this profile? This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+          <button id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
