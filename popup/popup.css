@@ -123,6 +123,31 @@ body, html {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Simplified Card Header */
+.card-header-simple {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-title-simple {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.card-title-icon {
+  width: 16px;
+  height: 16px;
+  color: rgba(102, 126, 234, 0.8);
+  flex-shrink: 0;
+}
+
+/* Legacy card header styles (keeping for backwards compatibility) */
 .card-header {
   display: flex;
   align-items: center;

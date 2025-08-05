@@ -241,3 +241,13 @@
   height: 40px;
   margin: 0 auto;
 }
+
+/* Card Title Icon Animations */
+.card-title-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .card-title-icon {
+  transform: scale(1.1) rotate(3deg);
+  color: rgba(102, 126, 234, 1);
+}
