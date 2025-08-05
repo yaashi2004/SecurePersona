@@ -4,75 +4,145 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SecurePersona</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.css">
   <link rel="stylesheet" href="popup.css">
   <link rel="stylesheet" href="animations.css">
 </head>
 <body>
-  <div class="container">
+  <div class="app-container">
     <!-- Header -->
-    <div class="header">
-      <h1 class="title">SecurePersona</h1>
-      <p class="subtitle">Secure Auto Form Filler</p>
-    </div>
-
-    <!-- Profile Selection -->
-    <div class="profile-section">
-      <label for="profileSelect" class="profile-label">Select Profile:</label>
-      <select id="profileSelect" class="profile-select">
-        <option value="">-- Select Profile --</option>
-      </select>
-      <button id="createProfileBtn" class="btn btn-secondary">Create New Profile</button>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="actions-section">
-      <button id="fillFormBtn" class="btn btn-primary" disabled>
-        <span class="btn-icon">📝</span>
-        Fill Form
-      </button>
-      <button id="generatePasswordBtn" class="btn btn-accent">
-        <span class="btn-icon">🔐</span>
-        Generate Password
-      </button>
-    </div>
-
-    <!-- Password Generator Section -->
-    <div id="passwordSection" class="password-section hidden">
-      <div class="password-options">
-        <label class="checkbox-label">
-          <input type="checkbox" id="includeNumbers" checked>
-          <span class="checkmark"></span>
-          Include Numbers
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" id="includeSymbols" checked>
-          <span class="checkmark"></span>
-          Include Symbols
-        </label>
-        <div class="length-control">
-          <label for="passwordLength">Length: <span id="lengthValue">12</span></label>
-          <input type="range" id="passwordLength" min="8" max="32" value="12">
+    <header class="header">
+      <div class="logo-section">
+        <div class="logo-icon">
+          <i data-feather="file-text" class="logo-icon-svg"></i>
+        </div>
+        <div class="logo-text">
+          <h1 class="app-title">SecurePersona</h1>
+          <p class="app-subtitle">Secure Auto Form Filler</p>
         </div>
       </div>
-      <div class="password-result">
-        <input type="text" id="generatedPassword" class="password-input" readonly>
-        <button id="copyPasswordBtn" class="btn btn-copy">Copy</button>
-      </div>
-    </div>
+    </header>
 
-    <!-- Status Messages & Lottie Animation -->
-    <div id="statusMessage" class="status-message hidden">
-      <span id="statusText"></span>
-      <div id="checkmarkAnimation" class="animation-container"></div>
-    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Profile Selection Card -->
+      <div class="card profile-card">
+        <div class="card-header-simple">
+          <h3 class="card-title-simple">
+            <i data-feather="users" class="card-title-icon"></i>
+            Profile Selection
+          </h3>
+        </div>
+        <div class="card-content">
+          <div class="select-wrapper">
+            <select id="profileSelect" class="modern-select">
+              <option value="">Choose your profile...</option>
+            </select>
+            <i data-feather="chevron-down" class="select-arrow"></i>
+          </div>
+          <button id="createProfileBtn" class="btn btn-outline">
+            <i data-feather="plus" class="btn-icon"></i>
+            Create New Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Actions Card -->
+      <div class="card actions-card">
+        <div class="card-header-simple">
+          <h3 class="card-title-simple">
+            <i data-feather="command" class="card-title-icon"></i>
+            Quick Actions
+          </h3>
+        </div>
+        <div class="card-content">
+          <div class="action-buttons">
+            <button id="fillFormBtn" class="btn btn-primary" disabled>
+              <i data-feather="edit-3" class="btn-icon"></i>
+              <span>Fill Form</span>
+              <div class="btn-shine"></div>
+            </button>
+            <button id="generatePasswordBtn" class="btn btn-secondary">
+              <i data-feather="key" class="btn-icon"></i>
+              <span>Generate Password</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Generator Card -->
+      <div id="passwordCard" class="card password-card hidden">
+        <div class="card-header-simple">
+          <h3 class="card-title-simple">
+            <i data-feather="lock" class="card-title-icon"></i>
+            Password Generator
+          </h3>
+        </div>
+        <div class="card-content">
+          <div class="password-options">
+            <div class="option-group">
+              <label class="toggle-switch">
+                <input type="checkbox" id="includeNumbers" checked>
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Include Numbers</span>
+              </label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="includeSymbols" checked>
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Include Symbols</span>
+              </label>
+            </div>
+            <div class="length-control">
+              <label class="control-label">
+                Password Length: <span id="lengthValue" class="length-value">12</span>
+              </label>
+              <div class="slider-wrapper">
+                <input type="range" id="passwordLength" class="modern-slider" min="8" max="32" value="12">
+                <div class="slider-track"></div>
+              </div>
+            </div>
+          </div>
+          <div class="password-result">
+            <div class="password-input-wrapper">
+              <input type="text" id="generatedPassword" class="password-input" readonly placeholder="Generated password will appear here...">
+              <button id="copyPasswordBtn" class="btn btn-icon-only" title="Copy to clipboard">
+                <i data-feather="copy" class="btn-icon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Card -->
+      <div id="statusCard" class="card status-card hidden">
+        <div class="status-content">
+          <div class="status-icon">
+            <div id="checkmarkAnimation" class="animation-container"></div>
+          </div>
+          <span id="statusText" class="status-text"></span>
+        </div>
+      </div>
+    </main>
 
     <!-- Footer -->
-    <div class="footer">
-      <button id="settingsBtn" class="btn btn-link">Settings</button>
-    </div>
+    <footer class="footer">
+      <button id="settingsBtn" class="btn btn-ghost">
+        <i data-feather="settings" class="btn-icon"></i>
+        <span>Settings</span>
+      </button>
+    </footer>
   </div>
 
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.6/lottie.min.js"></script>
   <script src="popup.js"></script>
+  <script>
+    // Initialize Feather icons
+    feather.replace();
+  </script>
 </body>
 </html>

@@ -1,183 +1,306 @@
-// options.js
+// options.js - SecurePersona Options Page
 
-document.addEventListener('DOMContentLoaded', () => {
-  const profilesList = document.getElementById('profilesList');
+document.addEventListener('DOMContentLoaded', function() {
+  // DOM Elements
   const addProfileBtn = document.getElementById('addProfileBtn');
-  const profileEditor = document.getElementById('profileEditor');
-  const editorTitle = document.getElementById('editorTitle');
-  const closeEditorBtn = document.getElementById('closeEditorBtn');
   const profileForm = document.getElementById('profileForm');
-  const saveProfileBtn = document.getElementById('saveProfileBtn');
-  const cancelEditBtn = document.getElementById('cancelEditBtn');
-  const deleteProfileBtn = document.getElementById('deleteProfileBtn');
-  const confirmModal = document.getElementById('confirmModal');
-  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-  const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-  const statusMessage = document.getElementById('statusMessage');
-  const statusText = document.getElementById('statusText');
+  const profileFormElement = document.getElementById('profileFormElement');
+  const profilesList = document.getElementById('profilesList');
+  const emptyState = document.getElementById('emptyState');
+  const cancelFormBtn = document.getElementById('cancelFormBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const formTitle = document.getElementById('formTitle');
+  const saveText = document.getElementById('saveText');
+  const statusToast = document.getElementById('statusToast');
+  const toastIcon = document.getElementById('toastIcon');
+  const toastMessage = document.getElementById('toastMessage');
 
+  // Form inputs
+  const cardNumberInput = document.getElementById('cardNumber');
+  const expiryDateInput = document.getElementById('expiryDate');
+  const cvvInput = document.getElementById('cvv');
+
+  // State
   let profiles = [];
   let editingProfileId = null;
-  
+  let isEditing = false;
+
+  // Initialize
   init();
 
   async function init() {
     await loadProfiles();
-    renderProfilesList();
+    renderProfiles();
+    setupEventListeners();
+    setupCardFormatting();
   }
 
-  function showStatus(message, isError = false) {
-    statusText.textContent = message;
-    statusMessage.className = `status-message ${isError ? 'error' : 'success'}`;
-    statusMessage.classList.remove('hidden');
-    setTimeout(() => statusMessage.classList.add('hidden'), 3000);
+  function setupEventListeners() {
+    addProfileBtn.addEventListener('click', showCreateForm);
+    cancelFormBtn.addEventListener('click', hideForm);
+    cancelBtn.addEventListener('click', hideForm);
+    profileFormElement.addEventListener('submit', handleFormSubmit);
+    
+    // Empty state button
+    emptyState.querySelector('.btn').addEventListener('click', showCreateForm);
   }
 
-  function loadProfiles() {
-    return new Promise(resolve => {
-      chrome.runtime.sendMessage({ action: 'getProfiles' }, (response) => {
-        profiles = response.profiles || [];
-        resolve();
+  function setupCardFormatting() {
+    // Format card number
+    cardNumberInput.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+      let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+      e.target.value = formattedValue;
+    });
+
+    // Format expiry date
+    expiryDateInput.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+      }
+      e.target.value = value;
+    });
+
+    // CVV only numbers
+    cvvInput.addEventListener('input', function(e) {
+      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+  }
+
+  async function loadProfiles() {
+    try {
+      const result = await chrome.storage.local.get(['profiles']);
+      profiles = result.profiles || [];
+    } catch (error) {
+      console.error('Error loading profiles:', error);
+      showToast('Error loading profiles', 'error');
+    }
+  }
+
+  async function saveProfiles() {
+    try {
+      await chrome.storage.local.set({ profiles });
+    } catch (error) {
+      console.error('Error saving profiles:', error);
+      showToast('Error saving profiles', 'error');
+    }
+  }
+
+  function renderProfiles() {
+    if (profiles.length === 0) {
+      profilesList.innerHTML = '';
+      emptyState.classList.remove('hidden');
+      return;
+    }
+
+    emptyState.classList.add('hidden');
+    
+    profilesList.innerHTML = profiles.map(profile => `
+      <div class="profile-item" data-id="${profile.id}">
+        <div class="profile-info">
+          <div class="profile-avatar">
+            ${getInitials(profile.fields.firstName, profile.fields.lastName)}
+          </div>
+          <div class="profile-details">
+            <h3>${profile.name}</h3>
+            <p>${profile.fields.email || 'No email provided'}</p>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-outline btn-small edit-btn" data-id="${profile.id}">
+            <i data-feather="edit-2" class="btn-icon"></i>
+            Edit
+          </button>
+          <button class="btn btn-danger btn-small delete-btn" data-id="${profile.id}">
+            <i data-feather="trash-2" class="btn-icon"></i>
+            Delete
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    // Re-initialize feather icons
+    feather.replace();
+
+    // Add event listeners
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const profileId = e.target.closest('.edit-btn').dataset.id;
+        editProfile(profileId);
+      });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const profileId = e.target.closest('.delete-btn').dataset.id;
+        deleteProfile(profileId);
       });
     });
   }
 
-  function saveProfiles() {
-    return new Promise(resolve => {
-      chrome.runtime.sendMessage({
-        action: 'saveProfiles',
-        profiles,
-        activeProfileId: editingProfileId
-      }, () => resolve());
-    });
+  function getInitials(firstName, lastName) {
+    const first = firstName?.charAt(0)?.toUpperCase() || '';
+    const last = lastName?.charAt(0)?.toUpperCase() || '';
+    return first + last || '?';
   }
 
-  function renderProfilesList() {
-    profilesList.innerHTML = '';
-    if (profiles.length === 0) {
-      profilesList.innerHTML = '<p>No profiles yet. Add one!</p>';
-      return;
-    }
-    profiles.forEach(profile => {
-      const item = document.createElement('div');
-      item.className = 'profile-item';
-      item.innerHTML = `
-        <span class="profile-name">${profile.name}</span>
-        <div>
-          <button class="btn btn-secondary edit-btn" data-id="${profile.id}">Edit</button>
-        </div>`;
-      profilesList.appendChild(item);
-    });
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-      btn.addEventListener('click', () => openEditor(btn.dataset.id));
-    });
-  }
-
-  function openEditor(profileId = null) {
-    editingProfileId = profileId;
-    profileEditor.classList.remove('hidden');
-    deleteProfileBtn.classList.toggle('hidden', profileId === null);
-    editorTitle.textContent = profileId ? 'Edit Profile' : 'Create New Profile';
-    if (profileId) {
-      const profile = profiles.find(p => p.id === profileId);
-      populateForm(profile);
-    } else {
-      profileForm.reset();
-    }
-  }
-
-  function closeEditor() {
-    profileEditor.classList.add('hidden');
+  function showCreateForm() {
+    isEditing = false;
     editingProfileId = null;
-    profileForm.reset();
+    formTitle.textContent = 'Create New Profile';
+    saveText.textContent = 'Save Profile';
+    profileFormElement.reset();
+    profileForm.classList.remove('hidden');
+    profileForm.scrollIntoView({ behavior: 'smooth' });
   }
 
-  function populateForm(profile) {
-    profileForm.profileName.value = profile.name;
-    profileForm.fullName.value = profile.fields.fullName || '';
-    profileForm.email.value = profile.fields.email || '';
-    profileForm.phone.value = profile.fields.phone || '';
-    profileForm.jobTitle.value = profile.fields.jobTitle || '';
-    profileForm.address.value = profile.fields.address || '';
-    profileForm.city.value = profile.fields.city || '';
-    profileForm.state.value = profile.fields.state || '';
-    profileForm.zip.value = profile.fields.zip || '';
-    profileForm.country.value = profile.fields.country || '';
-    profileForm.company.value = profile.fields.company || '';
-    profileForm.experienceYears.value = profile.fields.experienceYears || '';
-    profileForm.portfolioURL.value = profile.fields.portfolioURL || '';
-    profileForm.linkedin.value = profile.fields.linkedin || '';
-    profileForm.github.value = profile.fields.github || '';
-    profileForm.resumeURL.value = profile.fields.resumeURL || '';
-    profileForm.skills.value = profile.fields.skills || '';
-    profileForm.education.value = profile.fields.education || '';
-    profileForm.coverLetter.value = profile.fields.coverLetter || '';
-  }
+  function editProfile(profileId) {
+    const profile = profiles.find(p => p.id === profileId);
+    if (!profile) return;
 
-  function collectFormData() {
-    return {
-      name: profileForm.profileName.value.trim(),
-      id: editingProfileId || 'profile-' + Date.now(),
-      fields: {
-        fullName: profileForm.fullName.value.trim(),
-        email: profileForm.email.value.trim(),
-        phone: profileForm.phone.value.trim(),
-        jobTitle: profileForm.jobTitle.value.trim(),
-        address: profileForm.address.value.trim(),
-        city: profileForm.city.value.trim(),
-        state: profileForm.state.value.trim(),
-        zip: profileForm.zip.value.trim(),
-        country: profileForm.country.value.trim(),
-        company: profileForm.company.value.trim(),
-        experienceYears: profileForm.experienceYears.value.trim(),
-        portfolioURL: profileForm.portfolioURL.value.trim(),
-        linkedin: profileForm.linkedin.value.trim(),
-        github: profileForm.github.value.trim(),
-        resumeURL: profileForm.resumeURL.value.trim(),
-        skills: profileForm.skills.value.trim(),
-        education: profileForm.education.value.trim(),
-        coverLetter: profileForm.coverLetter.value.trim()
+    isEditing = true;
+    editingProfileId = profileId;
+    formTitle.textContent = 'Edit Profile';
+    saveText.textContent = 'Update Profile';
+
+    // Populate form with profile data
+    Object.keys(profile.fields).forEach(key => {
+      const input = document.getElementById(key);
+      if (input) {
+        input.value = profile.fields[key] || '';
       }
-    };
+    });
+
+    // Set profile name
+    document.getElementById('profileName').value = profile.name;
+
+    profileForm.classList.remove('hidden');
+    profileForm.scrollIntoView({ behavior: 'smooth' });
   }
 
-  profileForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const profileData = collectFormData();
-    if (!profileData.name) {
-      showStatus('Profile name is required', true);
+  async function deleteProfile(profileId) {
+    if (!confirm('Are you sure you want to delete this profile? This action cannot be undone.')) {
       return;
     }
-    if (editingProfileId) {
-      profiles = profiles.map(p => p.id === editingProfileId ? profileData : p);
-    } else {
-      profiles.push(profileData);
+
+    try {
+      profiles = profiles.filter(p => p.id !== profileId);
+      await saveProfiles();
+      renderProfiles();
+      showToast('Profile deleted successfully', 'success');
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      showToast('Error deleting profile', 'error');
     }
-    await saveProfiles();
-    showStatus('Profile saved successfully');
-    closeEditor();
-    renderProfilesList();
-  });
+  }
 
-  cancelEditBtn.addEventListener('click', closeEditor);
+  function hideForm() {
+    profileForm.classList.add('hidden');
+    profileFormElement.reset();
+    isEditing = false;
+    editingProfileId = null;
+  }
 
-  deleteProfileBtn.addEventListener('click', () => {
-    confirmModal.classList.remove('hidden');
-  });
+  async function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(profileFormElement);
+    const profileData = {};
+    
+    // Extract all form fields
+    for (let [key, value] of formData.entries()) {
+      profileData[key] = value.trim();
+    }
 
-  cancelDeleteBtn.addEventListener('click', () => {
-    confirmModal.classList.add('hidden');
-  });
+    // Validate required fields
+    if (!profileData.profileName) {
+      showToast('Profile name is required', 'error');
+      return;
+    }
 
-  confirmDeleteBtn.addEventListener('click', async () => {
-    profiles = profiles.filter(p => p.id !== editingProfileId);
-    confirmModal.classList.add('hidden');
-    await saveProfiles();
-    showStatus('Profile deleted', false);
-    closeEditor();
-    renderProfilesList();
-  });
+    try {
+      // Show loading state
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i data-feather="loader" class="btn-icon"></i> Saving...';
+      feather.replace();
 
-  addProfileBtn.addEventListener('click', () => openEditor());
-  closeEditorBtn.addEventListener('click', closeEditor);
+      // Encrypt sensitive data
+      const encryptedData = await encryptSensitiveData(profileData);
+
+      const profile = {
+        id: isEditing ? editingProfileId : generateUniqueId(),
+        name: profileData.profileName,
+        fields: encryptedData,
+        createdAt: isEditing ? profiles.find(p => p.id === editingProfileId).createdAt : new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      if (isEditing) {
+        const index = profiles.findIndex(p => p.id === editingProfileId);
+        profiles[index] = profile;
+      } else {
+        profiles.push(profile);
+      }
+
+      await saveProfiles();
+      renderProfiles();
+      hideForm();
+      
+      showToast(
+        isEditing ? 'Profile updated successfully!' : 'Profile created successfully!',
+        'success'
+      );
+
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      showToast('Error saving profile', 'error');
+    } finally {
+      // Reset button state
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<i data-feather="save" class="btn-icon"></i> ${isEditing ? 'Update Profile' : 'Save Profile'}`;
+      feather.replace();
+    }
+  }
+
+  async function encryptSensitiveData(data) {
+    // For now, we'll store data as-is. In production, you'd encrypt sensitive fields
+    // like credit card information using the Web Crypto API
+    const encryptedData = { ...data };
+    
+    // Remove profile name from fields
+    delete encryptedData.profileName;
+    
+    return encryptedData;
+  }
+
+  function generateUniqueId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  }
+
+  function showToast(message, type = 'success') {
+    toastMessage.textContent = message;
+    
+    // Update toast styling
+    statusToast.className = `status-toast ${type}`;
+    toastIcon.className = `toast-icon ${type}`;
+    
+    // Update icon
+    if (type === 'success') {
+      toastIcon.setAttribute('data-feather', 'check-circle');
+    } else {
+      toastIcon.setAttribute('data-feather', 'alert-circle');
+    }
+    
+    feather.replace();
+    
+    // Show toast
+    statusToast.classList.remove('hidden');
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      statusToast.classList.add('hidden');
+    }, 3000);
+  }
 });
