@@ -2,53 +2,49 @@
   "manifest_version": 3,
   "name": "SecurePersona",
   "version": "1.0.0",
-  "description": "Secure Auto Form Filler - Streamline and secure your form filling experience",
-  
+  "description": "Streamline and secure web form filling with multiple customizable profiles. Auto-detect and fill forms with one click, generate strong passwords, and manage your personal data securely.",
   "permissions": [
     "storage",
     "activeTab",
-    "contextMenus"
+    "scripting",
+    "clipboardWrite"
   ],
-  
   "host_permissions": [
     "<all_urls>"
   ],
-  
-  "background": {
-    "service_worker": "background.js"
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SecurePersona - Smart Form Filling",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-  
+  "options_page": "options.html",
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["contentScript.js"],
-      "run_at": "document_idle"
+      "matches": [
+        "<all_urls>",
+        "file://*",
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
     }
   ],
-  
-  "action": {
-    "default_popup": "popup/popup.html",
-    "default_title": "SecurePersona",
-    "default_icon": {
-      "16": "assets/icons/icon16.png",
-      
-      "48": "assets/icons/icon48.png"
-      
-    }
-  },
-  
-  "options_page": "options/options.html",
-  
   "icons": {
-    "16": "assets/icons/icon16.png",
-    
-    "48": "assets/icons/icon48.png"
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
-  
   "web_accessible_resources": [
     {
-      "resources": ["assets/animations/*"],
+      "resources": ["icons/*", "content.js"],
       "matches": ["<all_urls>"]
     }
   ]
-}
+} 

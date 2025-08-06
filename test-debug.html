@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecurePersona Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .form {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SecurePersona Debug Test</h1>
+        
+        <div>
+            <button class="btn" onclick="testElements()">Test Elements</button>
+            <button class="btn" onclick="showForm()">Show Form</button>
+            <button class="btn" onclick="testBackground()">Test Background</button>
+            <button class="btn" onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div id="testForm" class="form">
+            <h3>Test Profile Form</h3>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="name">Profile Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                <button type="submit" class="btn">Save Profile</button>
+            </form>
+        </div>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+
+        function testElements() {
+            log('=== Testing Elements ===');
+            
+            // Test if we're in a Chrome extension context
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✓ Chrome extension context detected');
+                log(`Extension ID: ${chrome.runtime.id}`);
+            } else {
+                log('✗ Not in Chrome extension context');
+            }
+
+            // Test basic DOM elements
+            const form = document.getElementById('testForm');
+            log(`Form element found: ${!!form}`);
+
+            const logElement = document.getElementById('log');
+            log(`Log element found: ${!!logElement}`);
+
+            // Test if we can access the options page elements
+            try {
+                const addProfileBtn = document.getElementById('addProfileBtn');
+                log(`Add Profile button found: ${!!addProfileBtn}`);
+            } catch (e) {
+                log(`Error checking addProfileBtn: ${e.message}`);
+            }
+        }
+
+        function showForm() {
+            log('=== Showing Form ===');
+            const form = document.getElementById('testForm');
+            if (form) {
+                form.style.display = 'block';
+                log('✓ Form should now be visible');
+            } else {
+                log('✗ Form element not found');
+            }
+        }
+
+        async function testBackground() {
+            log('=== Testing Background Script ===');
+            
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                log('✗ Chrome extension API not available');
+                return;
+            }
+
+            try {
+                log('Sending test message to background script...');
+                const response = await new Promise((resolve) => {
+                    chrome.runtime.sendMessage({ action: 'getProfiles' }, resolve);
+                });
+                
+                log(`Response received: ${JSON.stringify(response, null, 2)}`);
+                
+                if (response && response.success) {
+                    log(`✓ Background script working. Found ${response.profiles.length} profiles`);
+                } else {
+                    log(`✗ Background script error: ${response.error}`);
+                }
+            } catch (error) {
+                log(`✗ Error communicating with background script: ${error.message}`);
+            }
+        }
+
+        // Form submission test
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            log('=== Form Submitted ===');
+            
+            const formData = new FormData(this);
+            const profile = {};
+            
+            for (const [key, value] of formData.entries()) {
+                if (value.trim()) {
+                    profile[key] = value.trim();
+                }
+            }
+            
+            log(`Form data: ${JSON.stringify(profile, null, 2)}`);
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    log('Sending profile to background script...');
+                    const response = await new Promise((resolve) => {
+                        chrome.runtime.sendMessage({ 
+                            action: 'saveProfile', 
+                            profile: profile 
+                        }, resolve);
+                    });
+                    
+                    log(`Save response: ${JSON.stringify(response, null, 2)}`);
+                    
+                    if (response && response.success) {
+                        log('✓ Profile saved successfully!');
+                        this.reset();
+                        document.getElementById('testForm').style.display = 'none';
+                    } else {
+                        log(`✗ Error saving profile: ${response.error}`);
+                    }
+                } catch (error) {
+                    log(`✗ Error saving profile: ${error.message}`);
+                }
+            } else {
+                log('✗ Cannot save profile - not in extension context');
+            }
+        });
+
+        // Initialize
+        log('Debug test page loaded');
+        log('Click "Test Elements" to check if everything is working');
+    </script>
+</body>
+</html> 

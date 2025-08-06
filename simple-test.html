@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple SecurePersona Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .debug {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Simple SecurePersona Test</h1>
+    
+    <div class="debug">
+        <strong>Debug Info:</strong><br>
+        URL: <span id="url"></span><br>
+        Extension Loaded: <span id="extension-status">Checking...</span><br>
+        Content Script: <span id="content-status">Checking...</span>
+    </div>
+
+    <form>
+        <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" placeholder="Enter first name">
+        </div>
+        
+        <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" placeholder="Enter last name">
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter email">
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" placeholder="Enter phone">
+        </div>
+        
+        <div class="form-group">
+            <label for="address">Address</label>
+            <textarea id="address" name="address" rows="3" placeholder="Enter address"></textarea>
+        </div>
+        
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        // Update debug info
+        document.getElementById('url').textContent = window.location.href;
+        
+        // Check for extension
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            document.getElementById('extension-status').textContent = '✅ Available';
+            document.getElementById('extension-status').style.color = 'green';
+        } else {
+            document.getElementById('extension-status').textContent = '❌ Not Available';
+            document.getElementById('extension-status').style.color = 'red';
+        }
+        
+        // Check for content script
+        setTimeout(() => {
+            if (window.securePersonaContent) {
+                document.getElementById('content-status').textContent = '✅ Loaded';
+                document.getElementById('content-status').style.color = 'green';
+            } else {
+                document.getElementById('content-status').textContent = '❌ Not Loaded';
+                document.getElementById('content-status').style.color = 'red';
+            }
+        }, 2000);
+        
+        console.log('Simple test page loaded');
+        console.log('Chrome runtime available:', typeof chrome !== 'undefined' && typeof chrome.runtime !== 'undefined');
+        console.log('Window securePersonaContent:', window.securePersonaContent);
+    </script>
+</body>
+</html> 

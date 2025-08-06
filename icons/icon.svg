@@ -1,0 +1,25 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="url(#gradient)" stroke="#6366f1" stroke-width="4"/>
+  
+  <!-- Document icon -->
+  <path d="M40 32C40 28.6863 42.6863 26 46 26H70L88 44V88C88 91.3137 85.3137 94 82 94H46C42.6863 94 40 91.3137 40 88V32Z" fill="white"/>
+  
+  <!-- Document fold -->
+  <path d="M70 26L88 44H76C72.6863 44 70 41.3137 70 38V26Z" fill="#f3f4f6"/>
+  
+  <!-- Checkmark -->
+  <path d="M52 64L60 72L76 56" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Person silhouette -->
+  <circle cx="64" cy="48" r="8" fill="#6366f1"/>
+  <path d="M48 80C48 72.268 54.268 66 62 66H66C73.732 66 80 72.268 80 80V84H48V80Z" fill="#6366f1"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg> 

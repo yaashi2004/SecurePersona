@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecurePersona - Profile Management</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9ZM19 9H14V4H5V21H19V9Z" fill="#6366f1"/>
+                </svg>
+                <h1>SecurePersona</h1>
+                <span class="subtitle">Profile Management</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="addProfileBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
+                    </svg>
+                    Add Profile
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="sidebar">
+                <div class="profile-list" id="profileList">
+                    <h3>Profiles</h3>
+                    <div class="profile-items" id="profileItems">
+                        <!-- Profile items will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-content">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9ZM19 9H14V4H5V21H19V9Z" fill="#6366f1"/>
+                        </svg>
+                        <h2>Welcome to SecurePersona</h2>
+                        <p>Create your first profile to get started with secure form filling.</p>
+                        <button class="btn btn-primary" id="createFirstProfileBtn">
+                            Create Your First Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div class="profile-form" id="profileForm" style="display: none;">
+                    <div class="form-header">
+                        <h2 id="formTitle">Add New Profile</h2>
+                        <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    </div>
+
+                    <form id="profileFormElement">
+                        <div class="form-section">
+                            <h3>Basic Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileName">Profile Name *</label>
+                                    <input type="text" id="profileName" name="name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileType">Profile Type</label>
+                                    <select id="profileType" name="type">
+                                        <option value="personal">Personal</option>
+                                        <option value="professional">Professional</option>
+                                        <option value="job">Job Application</option>
+                                        <option value="freelance">Freelance</option>
+                                        <option value="shopping">Online Shopping</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Personal Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" id="firstName" name="firstName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" id="lastName" name="lastName">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email">
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone</label>
+                                    <input type="tel" id="phone" name="phone">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Address Information</h3>
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <input type="text" id="address" name="address">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="city">City</label>
+                                    <input type="text" id="city" name="city">
+                                </div>
+                                <div class="form-group">
+                                    <label for="state">State/Province</label>
+                                    <input type="text" id="state" name="state">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="zipCode">ZIP/Postal Code</label>
+                                    <input type="text" id="zipCode" name="zipCode">
+                                </div>
+                                <div class="form-group">
+                                    <label for="country">Country</label>
+                                    <input type="text" id="country" name="country">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Professional Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="company">Company</label>
+                                    <input type="text" id="company" name="company">
+                                </div>
+                                <div class="form-group">
+                                    <label for="jobTitle">Job Title</label>
+                                    <input type="text" id="jobTitle" name="jobTitle">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="linkedin">LinkedIn URL</label>
+                                    <input type="url" id="linkedin" name="linkedin">
+                                </div>
+                                <div class="form-group">
+                                    <label for="github">GitHub URL</label>
+                                    <input type="url" id="github" name="github">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="resume">Resume/CV URL</label>
+                                <input type="url" id="resume" name="resume">
+                            </div>
+                            <div class="form-group">
+                                <label for="skills">Skills</label>
+                                <textarea id="skills" name="skills" rows="3" placeholder="e.g., JavaScript, Python, React, Node.js"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="experience">Work Experience</label>
+                                <textarea id="experience" name="experience" rows="3" placeholder="e.g., 5+ years in software development"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="education">Education</label>
+                                <textarea id="education" name="education" rows="3" placeholder="e.g., Bachelor of Science in Computer Science"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="website">Website</label>
+                                <input type="url" id="website" name="website">
+                            </div>
+                            <div class="form-group">
+                                <label for="bio">Bio/Summary</label>
+                                <textarea id="bio" name="bio" rows="4" placeholder="Brief description about yourself"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Payment Information (Optional)</h3>
+                            <div class="form-group">
+                                <label for="cardName">Cardholder Name</label>
+                                <input type="text" id="cardName" name="cardName">
+                            </div>
+                            <div class="form-group">
+                                <label for="cardNumber">Card Number</label>
+                                <input type="text" id="cardNumber" name="cardNumber" maxlength="19">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cardExpiry">Expiry Date</label>
+                                    <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cardCvv">CVV</label>
+                                    <input type="text" id="cardCvv" name="cardCvv" maxlength="4">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="deleteBtn" style="display: none;">Delete Profile</button>
+                            <div class="form-actions-right">
+                                <button type="button" class="btn btn-secondary" id="cancelFormBtn">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Profile</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="profile-details" id="profileDetails" style="display: none;">
+                    <div class="profile-header">
+                        <h2 id="detailTitle">Profile Details</h2>
+                        <div class="profile-actions">
+                            <button class="btn btn-secondary" id="editBtn">Edit</button>
+                            <button class="btn btn-danger" id="deleteDetailBtn">Delete</button>
+                        </div>
+                    </div>
+                    <div class="profile-content" id="profileContent">
+                        <!-- Profile details will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this profile? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html> 
