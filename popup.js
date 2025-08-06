@@ -145,62 +145,14 @@ class SecurePersonaPopup {
             }
 
             console.log('Attempting to fill form on tab:', tab.url);
+            console.log('Profile data:', this.selectedProfile);
 
-            // Always inject content script programmatically for better reliability
-            let injectionSuccess = false;
-            try {
-                await chrome.scripting.executeScript({
-                    target: { tabId: tab.id },
-                    files: ['content.js']
-                });
-                console.log('Content script injected successfully');
-                injectionSuccess = true;
-            } catch (injectError) {
-                console.log('Content script injection failed:', injectError);
-                this.showNotification('Failed to inject content script. Please refresh the page and try again.', 'error');
+            // Wait for content script to be ready with better timeout
+            const isReady = await this.waitForContentScript(tab.id, 5000);
+            
+            if (!isReady) {
+                this.showNotification('Content script not ready. Please refresh the page and try again.', 'error');
                 return;
-            }
-
-            // Wait for script to initialize
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Test if content script is working
-            let testSuccess = false;
-            let retryCount = 0;
-            const maxRetries = 3;
-
-            while (!testSuccess && retryCount < maxRetries) {
-                try {
-                    const testResponse = await chrome.tabs.sendMessage(tab.id, { action: 'test' });
-                    console.log('Test response:', testResponse);
-                    if (testResponse && testResponse.success) {
-                        testSuccess = true;
-                        break;
-                    }
-                } catch (testError) {
-                    console.log(`Test message failed (attempt ${retryCount + 1}):`, testError);
-                    retryCount++;
-                    
-                    if (retryCount < maxRetries) {
-                        // Wait a bit before retrying
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        
-                        // Try injecting again
-                        try {
-                            await chrome.scripting.executeScript({
-                                target: { tabId: tab.id },
-                                files: ['content.js']
-                            });
-                            console.log('Retry injection successful');
-                        } catch (retryError) {
-                            console.log('Retry injection failed:', retryError);
-                        }
-                    }
-                }
-            }
-
-            if (!testSuccess) {
-                throw new Error('Content script failed to initialize after multiple attempts');
             }
 
             // Send message to content script to fill the form
@@ -226,6 +178,43 @@ class SecurePersonaPopup {
                 this.showNotification('Error filling form. Make sure you\'re on a webpage with forms.', 'error');
             }
         }
+    }
+
+    async waitForContentScript(tabId, timeout = 5000) {
+        return new Promise((resolve) => {
+            const startTime = Date.now();
+            
+            const checkScript = async () => {
+                try {
+                    // Try to send a test message
+                    await chrome.tabs.sendMessage(tabId, { action: 'test' });
+                    console.log('Content script is ready!');
+                    resolve(true);
+                } catch (error) {
+                    // If content script is not ready, try to inject it
+                    if (Date.now() - startTime < timeout) {
+                        try {
+                            await chrome.scripting.executeScript({
+                                target: { tabId: tabId },
+                                files: ['content.js']
+                            });
+                            console.log('Content script injected, waiting for initialization...');
+                            
+                            // Wait a bit more for initialization
+                            setTimeout(checkScript, 500);
+                        } catch (injectionError) {
+                            console.log('Content script injection failed, may already be loaded');
+                            setTimeout(checkScript, 500);
+                        }
+                    } else {
+                        console.log('Timeout waiting for content script');
+                        resolve(false);
+                    }
+                }
+            };
+            
+            checkScript();
+        });
     }
 
     generatePassword() {

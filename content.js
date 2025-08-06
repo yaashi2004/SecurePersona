@@ -103,19 +103,78 @@ class SecurePersonaContent {
         if (window.location.href.includes('docs.google.com')) {
             console.log('=== Google Forms specific detection ===');
             
-            // Method 1: Look for Google Forms question containers first
-            const questionContainers = document.querySelectorAll('.freebirdFormviewerComponentsQuestionBaseRoot');
-            console.log(`Found ${questionContainers.length} question containers`);
+            // Enhanced Google Forms selectors
+            const googleFormsSelectors = [
+                // Primary selectors
+                '.freebirdFormviewerComponentsQuestionBaseRoot',
+                '.freebirdFormviewerComponentsQuestionBaseTitle',
+                '[data-params]',
+                
+                // Input selectors
+                'input[type="text"]',
+                'input[type="email"]',
+                'input[type="tel"]',
+                'input[type="url"]',
+                'textarea',
+                'select',
+                
+                // Google Forms specific input containers
+                '.freebirdFormviewerComponentsQuestionTextInput',
+                '.freebirdFormviewerComponentsQuestionTextShortInput',
+                '.freebirdFormviewerComponentsQuestionTextLongInput',
+                '.freebirdFormviewerComponentsQuestionEmailInput',
+                '.freebirdFormviewerComponentsQuestionPhoneInput',
+                
+                // Contenteditable elements
+                'div[role="textbox"]',
+                'div[contenteditable="true"]',
+                
+                // Fallback selectors
+                '[data-test-id]',
+                '[aria-label]',
+                '[placeholder]'
+            ];
             
-            if (questionContainers.length > 0) {
+            let foundFields = false;
+            
+            // Try each selector method
+            for (const selector of googleFormsSelectors) {
+                const elements = document.querySelectorAll(selector);
+                console.log(`Selector "${selector}": found ${elements.length} elements`);
+                
+                if (elements.length > 0) {
+                    elements.forEach((element, index) => {
+                        if (this.isVisibleField(element)) {
+                            const label = this.findFieldLabel(element);
+                            if (label) {
+                                element.setAttribute('data-google-field-label', label);
+                                fields.push(element);
+                                console.log(`Added field via ${selector}: "${label}"`);
+                                foundFields = true;
+                            }
+                        }
+                    });
+                }
+                
+                // If we found fields with this method, break
+                if (foundFields) {
+                    console.log(`Successfully found fields using selector: ${selector}`);
+                    break;
+                }
+            }
+            
+            // If no fields found with specific selectors, try question containers
+            if (!foundFields) {
+                console.log('Trying question container approach...');
+                const questionContainers = document.querySelectorAll('.freebirdFormviewerComponentsQuestionBaseRoot');
+                console.log(`Found ${questionContainers.length} question containers`);
+                
                 questionContainers.forEach((container, index) => {
-                    // Find the question title
                     const titleElement = container.querySelector('.freebirdFormviewerComponentsQuestionBaseTitle');
                     if (titleElement) {
                         const title = titleElement.textContent.trim();
                         console.log(`Question ${index + 1}: "${title}"`);
                         
-                        // Find input elements within this container
                         const inputs = container.querySelectorAll('input, textarea, select, div[role="textbox"], div[contenteditable="true"]');
                         console.log(`  Found ${inputs.length} input elements in question "${title}"`);
                         
@@ -128,52 +187,37 @@ class SecurePersonaContent {
                         });
                     }
                 });
-            } else {
-                console.log('No question containers found, trying alternative selectors...');
-                
-                // Method 2: Try alternative Google Forms selectors
-                const alternativeSelectors = [
-                    '[data-params]',
-                    '.freebirdFormviewerComponentsQuestionBaseTitle',
-                    'input[type="text"]',
-                    'input[type="email"]',
-                    'input[type="tel"]',
-                    'textarea'
-                ];
-                
-                alternativeSelectors.forEach(selector => {
-                    const elements = document.querySelectorAll(selector);
-                    console.log(`Selector "${selector}": found ${elements.length} elements`);
-                    
-                    elements.forEach((element, index) => {
-                        if (this.isVisibleField(element)) {
-                            const label = this.findFieldLabel(element);
-                            if (label) {
-                                element.setAttribute('data-google-field-label', label);
-                                fields.push(element);
-                                console.log(`Added field via ${selector}: "${label}"`);
-                            }
-                        }
-                    });
-                });
             }
         }
         
-        // Method 3: Fallback to general input detection
+        // Fallback to general input detection if still no fields found
         if (fields.length === 0) {
             console.log('=== Fallback to general input detection ===');
-            const inputs = document.querySelectorAll('input, textarea, select, div[role="textbox"], div[contenteditable="true"]');
-            console.log(`Found ${inputs.length} input elements`);
+            const generalSelectors = [
+                'input[type="text"]',
+                'input[type="email"]',
+                'input[type="tel"]',
+                'input[type="url"]',
+                'textarea',
+                'select',
+                'div[role="textbox"]',
+                'div[contenteditable="true"]'
+            ];
             
-            inputs.forEach((input, index) => {
-                if (this.isVisibleField(input)) {
-                    const fieldLabel = this.findFieldLabel(input);
-                    if (fieldLabel) {
-                        input.setAttribute('data-google-field-label', fieldLabel);
-                        fields.push(input);
-                        console.log(`Added field ${index + 1}: "${fieldLabel}"`);
+            generalSelectors.forEach(selector => {
+                const inputs = document.querySelectorAll(selector);
+                console.log(`General selector "${selector}": found ${inputs.length} elements`);
+                
+                inputs.forEach((input, index) => {
+                    if (this.isVisibleField(input)) {
+                        const fieldLabel = this.findFieldLabel(input);
+                        if (fieldLabel) {
+                            input.setAttribute('data-google-field-label', fieldLabel);
+                            fields.push(input);
+                            console.log(`Added field ${index + 1}: "${fieldLabel}"`);
+                        }
                     }
-                }
+                });
             });
         }
         
@@ -197,38 +241,125 @@ class SecurePersonaContent {
     findFieldLabel(input) {
         console.log('=== Finding label for input ===');
         
-        // For Google Forms, look for question containers
+        // For Google Forms, try multiple approaches to find the question label
         if (window.location.href.includes('docs.google.com')) {
+            console.log('Looking for Google Forms question label...');
+            
+            // Method 1: Look for aria-labelledby and find the referenced element
+            const ariaLabelledBy = input.getAttribute('aria-labelledby');
+            if (ariaLabelledBy) {
+                console.log('Found aria-labelledby:', ariaLabelledBy);
+                const labelIds = ariaLabelledBy.split(' ');
+                for (const id of labelIds) {
+                    const labelElement = document.getElementById(id);
+                    if (labelElement) {
+                        const labelText = labelElement.textContent.trim();
+                        if (labelText && labelText.length > 0 && !labelText.includes('Your answer')) {
+                            console.log('✅ Found label via aria-labelledby:', labelText);
+                            return labelText;
+                        }
+                    }
+                }
+            }
+            
+            // Method 2: Look for question containers with different selectors
             let currentElement = input;
             for (let i = 0; i < 20; i++) {
                 if (!currentElement) break;
                 
-                const questionContainer = currentElement.closest('.freebirdFormviewerComponentsQuestionBaseRoot');
-                if (questionContainer) {
-                    const titleElement = questionContainer.querySelector('.freebirdFormviewerComponentsQuestionBaseTitle');
-                    if (titleElement) {
-                        const title = titleElement.textContent.trim();
-                        if (title && title.length > 0) {
-                            console.log('✅ Found Google Forms question title:', title);
-                            return title;
+                // Try multiple container selectors
+                const containerSelectors = [
+                    '.freebirdFormviewerComponentsQuestionBaseRoot',
+                    '[data-params]',
+                    '.freebirdFormviewerComponentsQuestionBaseTitle',
+                    '.freebirdFormviewerComponentsQuestionBaseHeader',
+                    '.freebirdFormviewerComponentsQuestionBaseTitleText'
+                ];
+                
+                for (const selector of containerSelectors) {
+                    const container = currentElement.closest(selector);
+                    if (container) {
+                        // Look for title elements within the container
+                        const titleSelectors = [
+                            '.freebirdFormviewerComponentsQuestionBaseTitle',
+                            '.freebirdFormviewerComponentsQuestionBaseTitleText',
+                            '[data-params]',
+                            'div[role="heading"]',
+                            'label'
+                        ];
+                        
+                        for (const titleSelector of titleSelectors) {
+                            const titleElement = container.querySelector(titleSelector);
+                            if (titleElement) {
+                                const title = titleElement.textContent.trim();
+                                if (title && title.length > 0 && !title.includes('Your answer')) {
+                                    console.log('✅ Found Google Forms question title:', title);
+                                    return title;
+                                }
+                            }
                         }
                     }
                 }
                 
                 currentElement = currentElement.parentElement;
             }
+            
+            // Method 3: Look for nearby text that could be a label
+            let parent = input.parentElement;
+            for (let i = 0; i < 15; i++) {
+                if (!parent) break;
+                
+                // Look for text nodes and elements that might contain the label
+                const walker = document.createTreeWalker(
+                    parent,
+                    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+                    null,
+                    false
+                );
+                
+                let node;
+                while (node = walker.nextNode()) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        const text = node.textContent.trim();
+                        if (text && text.length > 2 && text.length < 100 && 
+                            !text.includes('Your answer') && 
+                            !text.includes('Switch accounts') && 
+                            !text.includes('Not shared') &&
+                            !text.includes('Required') &&
+                            !text.includes('*') &&
+                            (text.includes('FIRST') || text.includes('NAME') || text.includes('EMAIL') || text.includes('PHONE'))) {
+                            console.log('✅ Found potential label in text node:', text);
+                            return text;
+                        }
+                    } else if (node.nodeType === Node.ELEMENT_NODE && node !== input) {
+                        const text = node.textContent.trim();
+                        if (text && text.length > 2 && text.length < 100 && 
+                            !text.includes('Your answer') && 
+                            !text.includes('Switch accounts') && 
+                            !text.includes('Not shared') &&
+                            !text.includes('Required') &&
+                            !text.includes('*') &&
+                            (text.includes('FIRST') || text.includes('NAME') || text.includes('EMAIL') || text.includes('PHONE'))) {
+                            console.log('✅ Found potential label in element:', text);
+                            return text;
+                        }
+                    }
+                }
+                
+                parent = parent.parentElement;
+            }
         }
         
         // Look for aria-label
         const ariaLabel = input.getAttribute('aria-label');
-        if (ariaLabel) {
+        if (ariaLabel && ariaLabel !== 'Your answer') {
             console.log('✅ Found aria-label:', ariaLabel);
             return ariaLabel;
         }
         
         // Look for placeholder
         const placeholder = input.getAttribute('placeholder');
-        if (placeholder) {
+        if (placeholder && placeholder !== 'Your answer') {
             console.log('✅ Found placeholder:', placeholder);
             return placeholder;
         }
@@ -276,152 +407,274 @@ class SecurePersonaContent {
     }
 
     getFieldValue(field, profile) {
-        const fieldLabel = field.getAttribute('data-google-field-label');
-        console.log('Field label:', fieldLabel);
+        // Enhanced field detection with multiple sources
+        const fieldLabel = field.getAttribute('data-google-field-label') || '';
+        const fieldName = field.name || '';
+        const fieldId = field.id || '';
+        const placeholder = field.placeholder || '';
+        const ariaLabel = field.getAttribute('aria-label') || '';
+        
+        console.log('=== FIELD MATCHING DEBUG ===');
+        console.log('Field sources:', {
+            label: fieldLabel,
+            name: fieldName,
+            id: fieldId,
+            placeholder: placeholder,
+            ariaLabel: ariaLabel
+        });
         console.log('Available profile fields:', Object.keys(profile));
         console.log('Profile data:', profile);
         
-        if (fieldLabel) {
-            const label = fieldLabel.toLowerCase();
-            console.log('Processing label:', label);
-            
-            // Check for first name variations - be more flexible
-            if ((label.includes('first name') || label.includes('firstname') || 
-                 (label.includes('first') && label.includes('name')) ||
-                 label.includes('name') && !label.includes('last') && !label.includes('email') && !label.includes('phone')) && 
-                profile.firstName) {
-                console.log('Mapping FIRST NAME -> firstName =', profile.firstName);
-                return profile.firstName;
+        // Create combined search text for better matching
+        const searchText = `${fieldLabel} ${fieldName} ${fieldId} ${placeholder} ${ariaLabel}`.toLowerCase();
+        console.log('Combined search text:', searchText);
+        
+        // Enhanced regex patterns for better matching (similar to Chrome's autofill)
+        const patterns = {
+            firstName: /first.*name|fname|given.*name|initials|first$|first\s*name/i,
+            lastName: /last.*name|lname|surname|family.*name|last$|second.*name|last\s*name/i,
+            email: /e[-._]?mail|email.*address/i,
+            phone: /phone|mobile|cell|telephone|tel$|contact.*number|phone.*number/i,
+            address: /address|addr|street|location|home.*address/i,
+            company: /company|organization|employer|workplace|business/i,
+            jobTitle: /job.*title|position|role|occupation|title/i,
+            linkedin: /linkedin|linked.*in/i,
+            github: /github|git.*hub/i,
+            website: /website|site|url|web.*site/i,
+            skills: /skill|expertise|competency|ability/i,
+            experience: /experience|work.*history|employment/i,
+            education: /education|academic|degree|school|university/i,
+            bio: /bio|biography|about|description/i
+        };
+        
+        // Try pattern matching first
+        for (const [profileField, pattern] of Object.entries(patterns)) {
+            if (pattern.test(searchText) && profile[profileField]) {
+                console.log(`✅ Matched ${profileField} using pattern:`, pattern);
+                console.log(`Value: ${profile[profileField]}`);
+                return profile[profileField];
             }
+        }
+        
+        // Fallback: Check for partial matches in individual fields
+        const individualFields = [
+            { text: fieldLabel.toLowerCase(), name: 'label' },
+            { text: fieldName.toLowerCase(), name: 'name' },
+            { text: fieldId.toLowerCase(), name: 'id' },
+            { text: placeholder.toLowerCase(), name: 'placeholder' },
+            { text: ariaLabel.toLowerCase(), name: 'aria-label' }
+        ];
+        
+        for (const fieldInfo of individualFields) {
+            if (!fieldInfo.text) continue;
             
-            // Check for last name variations
-            if ((label.includes('last name') || label.includes('lastname') || 
-                 (label.includes('last') && label.includes('name'))) && profile.lastName) {
-                console.log('Mapping LAST NAME -> lastName =', profile.lastName);
-                return profile.lastName;
+            // Check for first name variations
+            if ((fieldInfo.text.includes('first') && fieldInfo.text.includes('name')) ||
+                fieldInfo.text.includes('fname') ||
+                (fieldInfo.text.includes('name') && !fieldInfo.text.includes('last') && !fieldInfo.text.includes('email') && !fieldInfo.text.includes('phone'))) {
+                if (profile.firstName) {
+                    console.log(`✅ Matched firstName via ${fieldInfo.name}: "${fieldInfo.text}"`);
+                    return profile.firstName;
+                }
             }
             
             // Check for email variations
-            if (label.includes('email') && profile.email) {
-                console.log('Mapping Email -> email =', profile.email);
+            if (fieldInfo.text.includes('email') && profile.email) {
+                console.log(`✅ Matched email via ${fieldInfo.name}: "${fieldInfo.text}"`);
                 return profile.email;
             }
             
-            // Check for address variations
-            if (label.includes('address') && profile.address) {
-                console.log('Mapping Address -> address =', profile.address);
-                return profile.address;
-            }
-            
-            // Check for phone variations - be more flexible
-            if ((label.includes('phone') || label.includes('phone number') || 
-                 label.includes('mobile') || label.includes('cell') || 
-                 label.includes('telephone') || label.includes('number')) && profile.phone) {
-                console.log('Mapping Phone -> phone =', profile.phone);
-                return profile.phone;
-            }
-            
-            // Check for company variations
-            if ((label.includes('company') || label.includes('organization') || 
-                 label.includes('employer')) && profile.company) {
-                console.log('Mapping Company -> company =', profile.company);
-                return profile.company;
-            }
-            
-            // Check for job title variations
-            if ((label.includes('job') || label.includes('title') || 
-                 label.includes('position') || label.includes('role')) && profile.jobTitle) {
-                console.log('Mapping Job Title -> jobTitle =', profile.jobTitle);
-                return profile.jobTitle;
-            }
-            
-            // Check for LinkedIn variations
-            if (label.includes('linkedin') && profile.linkedin) {
-                console.log('Mapping LinkedIn -> linkedin =', profile.linkedin);
-                return profile.linkedin;
-            }
-            
-            // Check for GitHub variations
-            if (label.includes('github') && profile.github) {
-                console.log('Mapping GitHub -> github =', profile.github);
-                return profile.github;
-            }
-            
-            // Check for website variations
-            if ((label.includes('website') || label.includes('site') || 
-                 label.includes('url')) && profile.website) {
-                console.log('Mapping Website -> website =', profile.website);
-                return profile.website;
-            }
-            
-            // Check for skills variations
-            if ((label.includes('skill') || label.includes('expertise') || 
-                 label.includes('competency')) && profile.skills) {
-                console.log('Mapping Skills -> skills =', profile.skills);
-                return profile.skills;
-            }
-            
-            // Check for experience variations
-            if ((label.includes('experience') || label.includes('work')) && profile.experience) {
-                console.log('Mapping Experience -> experience =', profile.experience);
-                return profile.experience;
-            }
-            
-            // Check for education variations
-            if ((label.includes('education') || label.includes('academic') || 
-                 label.includes('degree')) && profile.education) {
-                console.log('Mapping Education -> education =', profile.education);
-                return profile.education;
-            }
-            
-            // Check for bio variations
-            if ((label.includes('bio') || label.includes('biography') || 
-                 label.includes('about')) && profile.bio) {
-                console.log('Mapping Bio -> bio =', profile.bio);
-                return profile.bio;
-            }
-            
-            // If no specific match found, try to use available data
-            console.log('No specific match found, checking available profile data...');
-            
-            // If we have firstName and this field doesn't look like email or phone, use firstName
-            if (profile.firstName && !label.includes('email') && !label.includes('phone') && !label.includes('number')) {
-                console.log('Using firstName as fallback for:', fieldLabel);
-                return profile.firstName;
-            }
-            
-            // If we have phone and this field looks like it could be a phone field
-            if (profile.phone && (label.includes('phone') || label.includes('number') || label.includes('contact'))) {
-                console.log('Using phone as fallback for:', fieldLabel);
+            // Check for phone variations
+            if ((fieldInfo.text.includes('phone') || fieldInfo.text.includes('mobile') || 
+                 fieldInfo.text.includes('cell') || fieldInfo.text.includes('tel')) && profile.phone) {
+                console.log(`✅ Matched phone via ${fieldInfo.name}: "${fieldInfo.text}"`);
                 return profile.phone;
             }
         }
         
-        console.log('No match found for field:', fieldLabel);
+        // Final fallback: Use available data intelligently
+        console.log('No specific match found, checking available profile data...');
+        
+        // If we have firstName and this field doesn't look like email or phone, use firstName
+        if (profile.firstName && !searchText.includes('email') && !searchText.includes('phone') && !searchText.includes('number')) {
+            console.log('Using firstName as fallback for:', fieldLabel);
+            return profile.firstName;
+        }
+        
+        // If we have phone and this field looks like it could be a phone field
+        if (profile.phone && (searchText.includes('phone') || searchText.includes('number') || searchText.includes('contact'))) {
+            console.log('Using phone as fallback for:', fieldLabel);
+            return profile.phone;
+        }
+        
+        console.log('❌ No match found for field:', fieldLabel);
         return null;
     }
 
     isFieldEmpty(field) {
+        console.log('=== Checking if field is empty ===');
+        console.log('Field element:', field);
+        console.log('Field tagName:', field.tagName);
+        console.log('Field type:', field.type);
+        
+        // For Google Forms, check multiple sources for content
+        if (window.location.href.includes('docs.google.com')) {
+            // Check if it's a container div (Google Forms often use divs as input containers)
+            if (field.tagName === 'DIV') {
+                // Look for actual input elements within the container
+                const inputs = field.querySelectorAll('input, textarea, div[role="textbox"], div[contenteditable="true"]');
+                console.log('Found input elements in container:', inputs.length);
+                
+                for (const input of inputs) {
+                    const inputValue = input.value || input.textContent || '';
+                    console.log('Input value:', `"${inputValue}"`);
+                    if (inputValue.trim() !== '') {
+                        console.log('❌ Field is NOT empty (has input with value)');
+                        return false;
+                    }
+                }
+                
+                // Check the container's own text content
+                const containerText = field.textContent || '';
+                console.log('Container text content:', `"${containerText}"`);
+                
+                // Filter out the label text and other non-input text
+                const lines = containerText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+                const hasInputContent = lines.some(line => 
+                    line.length > 0 && 
+                    !line.includes('*') && 
+                    !line.includes('Required') && 
+                    !line.includes('Your answer') &&
+                    !line.includes('FIRST NAME') &&
+                    !line.includes('Email') &&
+                    !line.includes('Address') &&
+                    !line.includes('Phone number') &&
+                    !line.includes('Comments')
+                );
+                
+                console.log('Has input content:', hasInputContent);
+                return !hasInputContent;
+            }
+        }
+        
+        // For regular input elements
         const value = field.value || field.textContent || '';
-        return value.trim() === '';
+        const isEmpty = value.trim() === '';
+        console.log('Regular field value:', `"${value}"`);
+        console.log('Is empty:', isEmpty);
+        return isEmpty;
     }
 
     fillField(field, value) {
         try {
-            if (field.getAttribute('contenteditable') === 'true' || field.getAttribute('role') === 'textbox') {
-                field.textContent = value;
-                field.innerHTML = value;
-                field.dispatchEvent(new Event('input', { bubbles: true }));
-                field.dispatchEvent(new Event('change', { bubbles: true }));
-            } else {
-                field.value = value;
-                field.dispatchEvent(new Event('input', { bubbles: true }));
-                field.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log(`Filling field with: ${value}`);
+            console.log('Field type:', field.type);
+            console.log('Field tagName:', field.tagName);
+            console.log('Field attributes:', {
+                contenteditable: field.getAttribute('contenteditable'),
+                role: field.getAttribute('role'),
+                tagName: field.tagName
+            });
+            
+            // For Google Forms, handle container divs
+            if (window.location.href.includes('docs.google.com') && field.tagName === 'DIV') {
+                console.log('Handling Google Forms container div...');
+                
+                // Find the actual input element within the container
+                const inputs = field.querySelectorAll('input, textarea, div[role="textbox"], div[contenteditable="true"]');
+                console.log('Found input elements in container:', inputs.length);
+                
+                if (inputs.length > 0) {
+                    // Fill the first input element found
+                    const inputElement = inputs[0];
+                    console.log('Filling input element:', inputElement);
+                    
+                    if (inputElement.getAttribute('contenteditable') === 'true' || inputElement.getAttribute('role') === 'textbox') {
+                        // For contenteditable elements
+                        inputElement.textContent = value;
+                        inputElement.innerHTML = value;
+                    } else {
+                        // For regular input elements
+                        inputElement.value = value;
+                        
+                        // Use native setter for better compatibility with frameworks
+                        try {
+                            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                            nativeInputValueSetter.call(inputElement, value);
+                        } catch (e) {
+                            console.log('Native setter not available, using direct assignment');
+                        }
+                    }
+                    
+                    // Dispatch events on the actual input element
+                    const events = ['input', 'change', 'keyup', 'blur', 'focus'];
+                    events.forEach(eventType => {
+                        try {
+                            inputElement.dispatchEvent(new Event(eventType, { bubbles: true, cancelable: true }));
+                        } catch (e) {
+                            console.log(`Failed to dispatch ${eventType} event:`, e);
+                        }
+                    });
+                    
+                    // Additional events for better framework compatibility
+                    try {
+                        inputElement.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+                        inputElement.focus();
+                        inputElement.blur();
+                    } catch (e) {
+                        console.log('Additional event dispatching failed:', e);
+                    }
+                    
+                    console.log(`✅ Successfully filled Google Forms input with: ${value}`);
+                    return;
+                }
             }
             
-            console.log(`Filled field with: ${value}`);
+            // Handle different field types for regular elements
+            if (field.getAttribute('contenteditable') === 'true' || field.getAttribute('role') === 'textbox') {
+                // For contenteditable elements
+                field.textContent = value;
+                field.innerHTML = value;
+            } else {
+                // For regular input elements
+                field.value = value;
+                
+                // Use native setter for better compatibility with frameworks
+                try {
+                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                    nativeInputValueSetter.call(field, value);
+                } catch (e) {
+                    console.log('Native setter not available, using direct assignment');
+                }
+            }
+            
+            // Dispatch comprehensive set of events for better compatibility
+            const events = ['input', 'change', 'keyup', 'blur', 'focus'];
+            
+            events.forEach(eventType => {
+                try {
+                    field.dispatchEvent(new Event(eventType, { bubbles: true, cancelable: true }));
+                } catch (e) {
+                    console.log(`Failed to dispatch ${eventType} event:`, e);
+                }
+            });
+            
+            // Additional events for better framework compatibility
+            try {
+                // Trigger React/Vue/Angular change detection
+                field.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+                
+                // Simulate user interaction
+                field.focus();
+                field.blur();
+            } catch (e) {
+                console.log('Additional event dispatching failed:', e);
+            }
+            
+            console.log(`✅ Successfully filled field with: ${value}`);
+            
         } catch (error) {
-            console.error('Error filling field:', error);
+            console.error('❌ Error filling field:', error);
         }
     }
 
